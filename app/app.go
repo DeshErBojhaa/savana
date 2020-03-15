@@ -97,6 +97,7 @@ func (a *App) ExecInstruction(ins string) error {
 			return nil
 		}
 		fmt.Printf("Created a parking lot with %d slots\n", capacity)
+
 	case "park":
 		if !isValidateInstruction(insParts, 3) {
 			fmt.Println("Malformed instruction")
@@ -112,6 +113,7 @@ func (a *App) ExecInstruction(ins string) error {
 			return err
 		}
 		fmt.Printf("Allocated slot number: %d\n", slot)
+
 	case "leave":
 		if !isValidateInstruction(insParts, 2) {
 			fmt.Println("Malformed instruction")
@@ -131,12 +133,14 @@ func (a *App) ExecInstruction(ins string) error {
 			return err
 		}
 		fmt.Printf("Slot number %d is free\n", slot)
+
 	case "status":
 		fmt.Println("Slot No.   Registration No     Colour")
 		cars := a.Handler.GetStatus()
 		for _, c := range cars {
 			fmt.Printf("%-11d%-20s%-6s\n", c.Slot, c.Reg, c.Color)
 		}
+
 	case "registration_numbers_for_cars_with_colour":
 		if !isValidateInstruction(insParts, 2) {
 			fmt.Println("Malformed instruction")
@@ -145,6 +149,7 @@ func (a *App) ExecInstruction(ins string) error {
 
 		regNums := a.Handler.RegNoOfCarsOfColor(insParts[1])
 		fmt.Println(strings.Join(regNums[:], ", "))
+
 	case "slot_numbers_for_cars_with_colour":
 		if !isValidateInstruction(insParts, 2) {
 			fmt.Println("Malformed instruction")
@@ -157,6 +162,7 @@ func (a *App) ExecInstruction(ins string) error {
 			slotsStr = append(slotsStr, strconv.Itoa(s))
 		}
 		fmt.Println(strings.Join(slotsStr[:], ", "))
+
 	case "slot_number_for_registration_number":
 		if !isValidateInstruction(insParts, 2) {
 			fmt.Println("Malformed instruction")
@@ -172,6 +178,7 @@ func (a *App) ExecInstruction(ins string) error {
 			return err
 		}
 		fmt.Println(slot)
+
 	default:
 		fmt.Println("Invalid instruction")
 	}
