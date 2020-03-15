@@ -17,6 +17,9 @@ var ErrSlotOutOfRange = errors.New("Slot number out of range")
 // ErrInconsistent when internal server error occurs.
 var ErrInconsistent = errors.New("Application in inconsistant state")
 
+// ErrAlreadyExistsInParking when internal server error occurs.
+var ErrAlreadyExistsInParking = errors.New("Car with same reg already exists in parking")
+
 // LotHandler represents a parking lot. It provides some auxiliary data
 // structures for efficient queries.
 type LotHandler struct {
@@ -43,6 +46,9 @@ func NewLotHandler(n int) (*LotHandler, error) {
 
 // ParkCar adds a new car to the parking lot.
 func (s *LotHandler) ParkCar(reg, color string) (int, error) {
+	if _, ok := s.regToSlot[reg]; ok {
+		return -1, ErrAlreadyExistsInParking
+	}
 	slot, err := s.emptySlots.GetNearestSlot()
 	if errors.Is(err, ErrHeapEmpty) {
 		return -1, ErrParkingFull
