@@ -5,34 +5,20 @@ import (
 	"sort"
 
 	"github.com/DeshErBojhaa/gojeck/parking_lot/data"
+	"github.com/DeshErBojhaa/gojeck/parking_lot/handler"
 )
-
-// ErrParkingFull is a package level error to represent a full parking.
-var ErrParkingFull = errors.New("Sorry, parking lot is full")
-
-// ErrEmptySlot when slot already empty.
-var ErrEmptySlot = errors.New("Slot already empty")
-
-// ErrSlotOutOfRange when slot already empty.
-var ErrSlotOutOfRange = errors.New("Slot number out of range")
-
-// ErrInconsistent when internal server error occurs.
-var ErrInconsistent = errors.New("Application in inconsistant state")
-
-// ErrAlreadyExistsInParking when internal server error occurs.
-var ErrAlreadyExistsInParking = errors.New("Car with same reg already exists in parking")
 
 // InMemoryHandler is ephimeral handler for parking lot.
 type InMemoryHandler struct {
-	parkingLot data.ParkingLot
+	parkingLot *data.ParkingLot
 }
 
 // NewLotHandler returns a in memory ephemeral store for a parking lot.
 func NewLotHandler(n int) (*InMemoryHandler, error) {
 	handler := InMemoryHandler{
-		parkingLot: data.ParkingLot{
+		parkingLot: &data.ParkingLot{
 			N:          n,
-			EmptySlots: data.NewMinHeap(n),
+			EmptySlots: NewMinHeap(n),
 			RegToColor: map[string]string{},
 			ColorToReg: map[string][]string{},
 			RegToSlot:  map[string]int{},
@@ -41,14 +27,24 @@ func NewLotHandler(n int) (*InMemoryHandler, error) {
 	return &handler, nil
 }
 
+// SetCapacity updates the capacity of the parking lot.
+func (h *InMemoryHandler) SetCapacity(n int) {
+	h.parkingLot.N = n
+	h.parkingLot.EmptySlots = NewMinHeap(n)
+	h.parkingLot.RegToColor = make(map[string]string)
+	h.parkingLot.ColorToReg = make(map[string][]string)
+	h.parkingLot.RegToSlot = make(map[string]int)
+	h.parkingLot.SlotToReg = make(map[int]string)
+}
+
 // ParkCar adds a new car to the parking lot.
 func (h *InMemoryHandler) ParkCar(reg, color string) (int, error) {
 	if _, ok := h.parkingLot.RegToSlot[reg]; ok {
-		return -1, ErrAlreadyExistsInParking
+		return -1, handler.ErrAlreadyExistsInParking
 	}
 	slot, err := h.parkingLot.EmptySlots.GetNearestSlot()
-	if errors.Is(err, data.ErrHeapEmpty) {
-		return -1, ErrParkingFull
+	if errors.Is(err, ErrHeapEmpty) {
+		return -1, handler.ErrParkingFull
 	}
 	h.parkingLot.ColorToReg[color] = append(h.parkingLot.ColorToReg[color], reg)
 	h.parkingLot.RegToColor[reg] = color
@@ -60,18 +56,18 @@ func (h *InMemoryHandler) ParkCar(reg, color string) (int, error) {
 // LeaveCar handels the parking state when a car leaves the parking lot.
 func (h *InMemoryHandler) LeaveCar(slot int) error {
 	if slot > h.parkingLot.N || slot < 1 {
-		return ErrSlotOutOfRange
+		return handler.ErrSlotOutOfRange
 	}
 	reg, ok := h.parkingLot.SlotToReg[slot]
 	if !ok {
-		return ErrEmptySlot
+		return handler.ErrEmptySlot
 	}
 	color, ok := h.parkingLot.RegToColor[reg]
 	if !ok {
-		return ErrInconsistent
+		return handler.ErrInconsistent
 	}
 
-	// 1. Remove this car from the reg list or colorToReg map.
+	// 1. Remove this car from the reg list of colorToReg map.
 	for i := 0; i < len(h.parkingLot.ColorToReg[color]); i++ {
 		if h.parkingLot.ColorToReg[color][i] == reg {
 			h.parkingLot.ColorToReg[color] = append(h.parkingLot.ColorToReg[color], h.parkingLot.ColorToReg[color]...)
@@ -87,7 +83,7 @@ func (h *InMemoryHandler) LeaveCar(slot int) error {
 
 	// Add this slot into the empty slot heap
 	if err := h.parkingLot.EmptySlots.Insert(slot); err != nil {
-		return ErrInconsistent
+		return handler.ErrInconsistent
 	}
 	return nil
 }
@@ -104,6 +100,15 @@ func (h *InMemoryHandler) SlotOfCarsOfColor(color string) []int {
 		slots = append(slots, h.parkingLot.RegToSlot[reg])
 	}
 	return slots
+}
+
+// SlotOfCar returns the slot of a car given the reg number.
+func (h *InMemoryHandler) SlotOfCar(reg string) (int, error) {
+	s, ok := h.parkingLot.RegToSlot[reg]
+	if !ok {
+		return -1, handler.ErrInvalidReg
+	}
+	return s, nil
 }
 
 // GetStatus returns all the cars detail in the parking in their ascending slot order.

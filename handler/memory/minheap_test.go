@@ -1,14 +1,8 @@
-package data
+package memory
 
 import (
 	"errors"
 	"testing"
-)
-
-// Success and failure markers.
-const (
-	Success = "\u2713"
-	Failed  = "\u2717"
 )
 
 func TestMinHeapBuild(t *testing.T) {
