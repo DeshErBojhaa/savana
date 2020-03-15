@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -17,13 +18,15 @@ func main() {
 		log.Println("error: ", err)
 		os.Exit(1)
 	}
-	log.Println("Application Terminating!")
 	os.Exit(0)
 }
 
 func run() error {
 	logD := log.New(os.Stdout, "DEBUG: ", log.LstdFlags|log.Lshortfile)
 	logE := log.New(os.Stderr, "ERROR: ", log.LstdFlags|log.Lshortfile)
+	// Tempraryly discard logging to match automated test.
+	logD.SetOutput(ioutil.Discard)
+	logE.SetOutput(ioutil.Discard)
 
 	logD.Println("Started: Initializing Application")
 	defer logD.Println("Execution Complete")

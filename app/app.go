@@ -31,7 +31,6 @@ func (a *App) Serve() error {
 
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
 			err := a.ExecInstruction(scanner.Text())
 			if err != nil {
 				return err
@@ -135,10 +134,11 @@ func (a *App) ExecInstruction(ins string) error {
 		fmt.Printf("Slot number %d is free\n", slot)
 
 	case "status":
-		fmt.Println("Slot No.   Registration No     Colour")
+		fmt.Println("Slot No.    Registration No    Colour")
 		cars := a.Handler.GetStatus()
 		for _, c := range cars {
-			fmt.Printf("%-11d%-20s%-6s\n", c.Slot, c.Reg, c.Color)
+			// fmt.Printf("%-12d%-19s%-6s\n", c.Slot, c.Reg, c.Color)
+			fmt.Printf("%d           %s      %s\n", c.Slot, c.Reg, c.Color)
 		}
 
 	case "registration_numbers_for_cars_with_colour":
