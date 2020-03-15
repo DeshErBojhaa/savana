@@ -17,5 +17,8 @@ var ErrInconsistent = errors.New("Application in inconsistant state")
 // ErrAlreadyExistsInParking when internal server error occurs.
 var ErrAlreadyExistsInParking = errors.New("Car with same reg already exists in parking")
 
-//ErrInvalidReg when registration is not present in parking
+// ErrInvalidReg when registration is not present in parking
 var ErrInvalidReg = errors.New("Not found")
+
+// ErrInvalidCapacity when capacity is < 1
+var ErrInvalidCapacity = errors.New("Capacity must be a positive number")

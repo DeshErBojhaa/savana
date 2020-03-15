@@ -28,13 +28,17 @@ func NewLotHandler(n int) (*InMemoryHandler, error) {
 }
 
 // SetCapacity updates the capacity of the parking lot.
-func (h *InMemoryHandler) SetCapacity(n int) {
+func (h *InMemoryHandler) SetCapacity(n int) error {
+	if n < 1 {
+		return handler.ErrInvalidCapacity
+	}
 	h.parkingLot.N = n
 	h.parkingLot.EmptySlots = NewMinHeap(n)
 	h.parkingLot.RegToColor = make(map[string]string)
 	h.parkingLot.ColorToReg = make(map[string][]string)
 	h.parkingLot.RegToSlot = make(map[string]int)
 	h.parkingLot.SlotToReg = make(map[int]string)
+	return nil
 }
 
 // ParkCar adds a new car to the parking lot.
@@ -70,7 +74,7 @@ func (h *InMemoryHandler) LeaveCar(slot int) error {
 	// 1. Remove this car from the reg list of colorToReg map.
 	for i := 0; i < len(h.parkingLot.ColorToReg[color]); i++ {
 		if h.parkingLot.ColorToReg[color][i] == reg {
-			h.parkingLot.ColorToReg[color] = append(h.parkingLot.ColorToReg[color], h.parkingLot.ColorToReg[color]...)
+			h.parkingLot.ColorToReg[color] = append(h.parkingLot.ColorToReg[color][:i], h.parkingLot.ColorToReg[color][i+1:]...)
 			break
 		}
 	}

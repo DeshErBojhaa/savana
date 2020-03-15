@@ -14,8 +14,8 @@ import (
 
 // App is the central
 type App struct {
-	LogE, LogD *log.Logger
-	Handler    ParkingLotHandler
+	LogD    *log.Logger
+	Handler ParkingLotHandler
 }
 
 // Serve ...
@@ -40,13 +40,41 @@ func (a *App) Serve() error {
 		if scanner.Err(); err != nil {
 			return err
 		}
+	} else {
+		a.LogD.Println("Interactive Mode Enabled")
+		for {
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Scan()
+			instruction := scanner.Text()
+
+			if instruction == "exit" {
+				a.LogD.Println("Processing Exis command")
+				return a.CleanUp()
+			}
+			if err := a.ExecInstruction(instruction); err != nil {
+				return nil
+			}
+		}
 	}
 	return nil
 }
 
 // CleanUp purges any reuseable resources and prevents memory leak.
 func (a *App) CleanUp() error {
+	defer a.LogD.Println("All resources purged")
 	return nil
+}
+
+func isValidateInstruction(instructions []string, reqParts int) bool {
+	if len(instructions) != reqParts {
+		return false
+	}
+	for _, s := range instructions {
+		if s == "" {
+			return false
+		}
+	}
+	return true
 }
 
 // ExecInstruction executes the current instruction.
@@ -54,13 +82,27 @@ func (a *App) ExecInstruction(ins string) error {
 	insParts := strings.Split(ins, " ")
 	switch insParts[0] {
 	case "create_parking_lot":
+		if !isValidateInstruction(insParts, 2) {
+			fmt.Println("Malformed instruction")
+			return nil
+		}
+
 		capacity, err := strconv.Atoi(insParts[1])
 		if err != nil {
-			return err
+			fmt.Printf("%v is not an integer\n", insParts[1])
+			return nil
 		}
-		a.Handler.SetCapacity(capacity)
+		if err := a.Handler.SetCapacity(capacity); err != nil {
+			fmt.Printf("%v\n", err)
+			return nil
+		}
 		fmt.Printf("Created a parking lot with %d slots\n", capacity)
 	case "park":
+		if !isValidateInstruction(insParts, 3) {
+			fmt.Println("Malformed instruction")
+			return nil
+		}
+
 		slot, err := a.Handler.ParkCar(insParts[1], insParts[2])
 		if err != nil {
 			if errors.Is(err, handler.ErrAlreadyExistsInParking) || errors.Is(err, handler.ErrParkingFull) {
@@ -71,6 +113,11 @@ func (a *App) ExecInstruction(ins string) error {
 		}
 		fmt.Printf("Allocated slot number: %d\n", slot)
 	case "leave":
+		if !isValidateInstruction(insParts, 2) {
+			fmt.Println("Malformed instruction")
+			return nil
+		}
+
 		slot, err := strconv.Atoi(insParts[1])
 		if err != nil {
 			return err
@@ -91,9 +138,19 @@ func (a *App) ExecInstruction(ins string) error {
 			fmt.Printf("%-11d%-20s%-6s\n", c.Slot, c.Reg, c.Color)
 		}
 	case "registration_numbers_for_cars_with_colour":
+		if !isValidateInstruction(insParts, 2) {
+			fmt.Println("Malformed instruction")
+			return nil
+		}
+
 		regNums := a.Handler.RegNoOfCarsOfColor(insParts[1])
 		fmt.Println(strings.Join(regNums[:], ", "))
 	case "slot_numbers_for_cars_with_colour":
+		if !isValidateInstruction(insParts, 2) {
+			fmt.Println("Malformed instruction")
+			return nil
+		}
+
 		slots := a.Handler.SlotOfCarsOfColor(insParts[1])
 		slotsStr := []string{}
 		for _, s := range slots {
@@ -101,6 +158,11 @@ func (a *App) ExecInstruction(ins string) error {
 		}
 		fmt.Println(strings.Join(slotsStr[:], ", "))
 	case "slot_number_for_registration_number":
+		if !isValidateInstruction(insParts, 2) {
+			fmt.Println("Malformed instruction")
+			return nil
+		}
+
 		slot, err := a.Handler.SlotOfCar(insParts[1])
 		if err != nil {
 			if errors.Is(err, handler.ErrInvalidReg) {
@@ -110,6 +172,8 @@ func (a *App) ExecInstruction(ins string) error {
 			return err
 		}
 		fmt.Println(slot)
+	default:
+		fmt.Println("Invalid instruction")
 	}
 	return nil
 }
