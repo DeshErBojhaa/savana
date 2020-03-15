@@ -1,6 +1,13 @@
 package app
 
-// ParkingLot represents the state of the system.
-type ParkingLot struct {
-	N int
+import "github.com/DeshErBojhaa/gojeck/parking_lot/data"
+
+// ParkingLot is a interface that represents all the functionality
+// provided by a parking lot system.
+type ParkingLot interface {
+	ParkCar(reg, color string) (int, error)
+	LeaveCar(slot int) error
+	RegNoOfCarsOfColor(color string) []string
+	SlotOfCarsOfColor(color string) []int
+	GetStatus() []data.CarInPark
 }

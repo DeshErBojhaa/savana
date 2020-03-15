@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/DeshErBojhaa/gojeck/parking_lot/data"
 )
 
 // Success and failure markers.
@@ -85,7 +87,7 @@ func TestLeavCar(t *testing.T) {
 	if errors.Is(err, ErrEmptySlot) {
 		t.Logf("%s Expected err: %v    Got err: %v", Success, err, ErrEmptySlot)
 	} else {
-		t.Logf("%s Expected err: %v    Got err: %v", Failed, err, ErrHeapEmpty)
+		t.Logf("%s Expected err: %v    Got err: %v", Failed, err, data.ErrHeapEmpty)
 		t.Fail()
 	}
 
@@ -126,10 +128,10 @@ func TestGetStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := []CarInPark{
-		CarInPark{Slot: 1, Color: "Red", Reg: "ABC"},
-		CarInPark{Slot: 2, Color: "Red", Reg: "DEF"},
-		CarInPark{Slot: 3, Color: "Blue", Reg: "GHI"},
+	want := []data.CarInPark{
+		data.CarInPark{Slot: 1, Color: "Red", Reg: "ABC"},
+		data.CarInPark{Slot: 2, Color: "Red", Reg: "DEF"},
+		data.CarInPark{Slot: 3, Color: "Blue", Reg: "GHI"},
 	}
 	status := h.GetStatus()
 	for i, s := range status {
