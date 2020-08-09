@@ -1,4 +1,7 @@
-# Parking Lot
+# Savana
+
+Savana is the controller for a parking lot. It finds the optimal parking spot for vehicles in a 
+multy entry multi storey parking space.
 
 ## Usage guide
 1. Run "setup" script in bin folder.
